@@ -1,6 +1,6 @@
 # FFX Skill Trees
 
-FFX Skill Trees is an attemt to recreate some of the most in-depth skill trees from the Final Fantasy Franchise.
+FFX Skill Trees is an attempt to recreate some of the most in-depth skill trees from the Final Fantasy Franchise.
 
 ## Brief description:
 Final Fantasy X's skill tree, called Sphere Grid, is a unique character progression system where players customize their characters
@@ -26,3 +26,24 @@ each offering varying levels of customization.
 6. Action Menu: Pops up when you're about to interact with a node or move.
    - Options: Move, Use Sphere, Learn Ability, etc.
    - Confirm/Cancel Buttons
+
+## Implementation Approach:
+For the Data Model I'm planning to use:
+1. Data Tables for:
+   - The static version of the Sphere Grid (node ID, position, type, connections).
+   - This will load once at game start.
+2. Struct Array (copied from the Data Table) for:
+   - Runtime state tracking (which nodes are unlocked, character positions, etc.).
+   - Saving and modifying as the game progresses.
+
+Code Driving the UI will be:
+1. UI Manager
+   - Controls info panels, action menus
+   - Communicates with GridManager
+2. Grid Manager
+   - Holds data structure for node layout
+   - Calculates movement/reachability
+   - Handles input
+2. CharacterCursor
+   - Moves between nodes
+   - Stores the path travelled from starting node
