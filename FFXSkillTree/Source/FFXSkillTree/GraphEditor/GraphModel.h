@@ -14,7 +14,7 @@ USTRUCT(BlueprintType)
 struct FGraphNodeData
 {
 	GENERATED_BODY()
-
+	
 	/* Will be used when Saving/Loading as FGuid is globally unique. */
 	UPROPERTY(VisibleAnywhere)
 	FGuid ID;
@@ -46,9 +46,17 @@ class FFXSKILLTREE_API UGraphModel : public UObject
 
 public:
 	UGraphModel();
+
+	UFUNCTION(BlueprintCallable)
+	bool GraphIsValid() 
+	{
+		return StartNodeID.IsValid();
+	};
 	
-	/* Add a new node into the array of nodes so it can be tracked by the graph data model. */
-    FGuid AddNode(const FGraphNodeData* NodeData);
+	/* Add a new node into the array of nodes so it can be tracked by the graph data model.
+	 * This function accepts an rvalue reference, allowing us to MoveTemp() from the call site.
+	 */
+	FGuid AddNode(FGraphNodeData&& NodeData);
     FGuid AddNode(const TArray<FGuid>& ConnectedTo, bool bTraversable, const FGuid& NodeID = FGuid());
 
 	/**
@@ -61,7 +69,7 @@ public:
 	bool RemoveNode(const FGuid& NodeID);
 	
 	UFUNCTION(BlueprintCallable)
-	TArray<FGuid> GetReachableNodes(FGuid StartNodeID, int32 MaxDepth = 4);
+	TArray<FGuid> GetReachableNodes(FGuid RootNodeID, int32 MaxDepth = 4);
 
 	/////// Getters ///////
 	const FGraphNodeData* GetNode(FGuid NodeID) const
@@ -84,7 +92,6 @@ public:
 	};
 	
 protected:
+	FGuid StartNodeID;
 	TMap<FGuid, FGraphNodeData> AllNodes;
-
-	FGuid Test_NodeIDToSearchFor;
 };

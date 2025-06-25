@@ -5,45 +5,23 @@ DEFINE_LOG_CATEGORY(GraphModel);
 UGraphModel::UGraphModel()
 {
 	//Temp code to use for testing purposes for now
-	// Node A
-	FGraphNodeData NodeA;
-	NodeA.ID = FGuid::NewGuid();
-	NodeA.bIsTraversable = true;
-
-	// Node B
-	FGraphNodeData NodeB;
-	NodeB.ID = FGuid::NewGuid();
-	NodeB.bIsTraversable = true;
+	auto MakeNode = [](bool bIsTraversable) -> FGraphNodeData
+	{
+		FGraphNodeData Node;
+		Node.ID = FGuid::NewGuid();
+		Node.bIsTraversable = bIsTraversable;
+		return Node;
+	};
 	
-	// Node C
-	FGraphNodeData NodeC;
-	NodeC.ID = FGuid::NewGuid();
-	NodeC.bIsTraversable = true;
-
-	// Node D
-	FGraphNodeData NodeD;
-	NodeD.ID = FGuid::NewGuid();
-	NodeD.bIsTraversable = true;
-
-	// Node E
-	FGraphNodeData NodeE;
-	NodeE.ID = FGuid::NewGuid();
-	NodeE.bIsTraversable = true;
-
-	// Node F
-	FGraphNodeData NodeF;
-	NodeF.ID = FGuid::NewGuid();
-	NodeF.bIsTraversable = true;
-
-	// Node G
-	FGraphNodeData NodeG;
-	NodeG.ID = FGuid::NewGuid();
-	NodeG.bIsTraversable = true;
-
-	// Node H
-	FGraphNodeData NodeH;
-	NodeH.ID = FGuid::NewGuid();
-	NodeH.bIsTraversable = true;
+	// Create nodes
+	FGraphNodeData NodeA = MakeNode(true);
+	FGraphNodeData NodeB = MakeNode(true);
+	FGraphNodeData NodeC = MakeNode(true);
+	FGraphNodeData NodeD = MakeNode(true);
+	FGraphNodeData NodeE = MakeNode(true);
+	FGraphNodeData NodeF = MakeNode(true);
+	FGraphNodeData NodeG = MakeNode(true);
+	FGraphNodeData NodeH = MakeNode(true);
 	
     //Connect
 	NodeA.ConnectedNodes = { NodeE.ID, NodeB.ID, NodeG.ID};
@@ -55,14 +33,15 @@ UGraphModel::UGraphModel()
 	NodeG.ConnectedNodes = { NodeA.ID, NodeB.ID };
 	NodeH.ConnectedNodes = { NodeC.ID, NodeB.ID };
 	
-	AddNode(&NodeA);
-	AddNode(&NodeB);
-	AddNode(&NodeC);
-	AddNode(&NodeD);
-	AddNode(&NodeE);
-	AddNode(&NodeF);
-	AddNode(&NodeG);
-	AddNode(&NodeH);
+	// Add nodes to map (moving them)
+	AddNode(MoveTemp(NodeA));
+	AddNode(MoveTemp(NodeB));
+	AddNode(MoveTemp(NodeC));
+	AddNode(MoveTemp(NodeD));
+	AddNode(MoveTemp(NodeE));
+	AddNode(MoveTemp(NodeF));
+	AddNode(MoveTemp(NodeG));
+	AddNode(MoveTemp(NodeH));;
 
 	TArray<FGuid> Result = GetReachableNodes(NodeA.ID);
 
@@ -72,31 +51,14 @@ UGraphModel::UGraphModel()
 	}
 }
 
-FGuid UGraphModel::AddNode(const FGraphNodeData* NodeData)
+FGuid UGraphModel::AddNode(FGraphNodeData&& NodeData)
 {
-	if (!NodeData)
-	{
-		UE_LOG(GraphModel, Warning, TEXT("AddNode: NodeData is null"));
-		return FGuid();
-	}
-	
-	FGraphNodeData NewNodeData = *NodeData;
+	// Assign unique ID if needed
+	FGuid NewID = NodeData.ID.IsValid() ? NodeData.ID : FGuid::NewGuid();
+	NodeData.ID = NewID;
 
-	// Ensure valid UniqueID
-	if (!NewNodeData.ID.IsValid())
-	{
-		NewNodeData.ID = FGuid::NewGuid();
-
-		UE_LOG(GraphModel, Error, TEXT("AddNode: Failed to allocate UGraphNodeData"));
-		return FGuid();
-	}
-	
-	// Assign unique ID
-	FGuid NewID = NodeData->ID.IsValid() ? NodeData->ID : FGuid::NewGuid();
-	NewNodeData.ID = NewID;
-
-	// Ensure the connected nodes have a link to the new node.
-	for (const FGuid& ConnectedID : NewNodeData.ConnectedNodes)
+	// Link back from connected nodes
+	for (const FGuid& ConnectedID : NodeData.ConnectedNodes)
 	{
 		if (FGraphNodeData* OtherNode = AllNodes.Find(ConnectedID))
 		{
@@ -104,9 +66,8 @@ FGuid UGraphModel::AddNode(const FGraphNodeData* NodeData)
 		}
 	}
 
-	// Register node
-	AllNodes.Add(NewID, NewNodeData);
-
+	// Move node into map (no copy), more memory efficient as no duplicate nodes exist in memory. 
+	AllNodes.Add(NewID, MoveTemp(NodeData));
 	return NewID;
 }
 
@@ -156,11 +117,11 @@ bool UGraphModel::RemoveNode(const FGuid& NodeID)
 	return true;
 }
 
-TArray<FGuid> UGraphModel::GetReachableNodes(FGuid StartNodeID, int32 MaxDepth)
+TArray<FGuid> UGraphModel::GetReachableNodes(FGuid RootNodeID, int32 MaxDepth)
 {
 	TArray<FGuid> Path;
 
-	if (!AllNodes.Contains(StartNodeID))
+	if (!GraphIsValid() || !AllNodes.Contains(RootNodeID))
 	{
 		return Path;
 	}
@@ -168,8 +129,8 @@ TArray<FGuid> UGraphModel::GetReachableNodes(FGuid StartNodeID, int32 MaxDepth)
 	TSet<FGuid> Visited;
 	TQueue<TPair<FGuid, int32>> SearchQueue;
 
-	SearchQueue.Enqueue(TPair<FGuid, int32>(StartNodeID, 0));
-	Visited.Add(StartNodeID);
+	SearchQueue.Enqueue(TPair<FGuid, int32>(RootNodeID, 0));
+	Visited.Add(RootNodeID);
 
 	while (!SearchQueue.IsEmpty())
 	{
