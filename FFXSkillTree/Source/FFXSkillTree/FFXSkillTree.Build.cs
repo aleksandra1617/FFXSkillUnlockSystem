@@ -6,18 +6,18 @@ public class FFXSkillTree : ModuleRules
 {
 	public FFXSkillTree(ReadOnlyTargetRules Target) : base(Target)
 	{
+		PrivateDependencyModuleNames.AddRange(new string[] { "EditorScriptingUtilities", "EditorScriptingUtilities", "Blutility" });
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" });
-
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
-
-		// Uncomment if you are using Slate UI
-		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
 		
-		// Uncomment if you are using online features
-		// PrivateDependencyModuleNames.Add("OnlineSubsystem");
-
-		// To include OnlineSubsystemSteam, add it to the plugins section in your uproject file with the Enabled attribute set to true
+		// Editor-only dependencies
+		if (Target.bBuildEditor)
+		{
+			PrivateDependencyModuleNames.AddRange(new string[] 
+			{
+				"EditorStyle"                // For editor UI styling
+			});
+		}
 	}
 }
