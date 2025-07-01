@@ -4,6 +4,7 @@
 #include "Blueprint/UserWidget.h"
 #include "GraphWidget.generated.h"
 
+class UGraphModel;
 class UInteractiveGraphDA;
 class UCanvasPanel;
 class UGraphNodeWidget;
@@ -21,12 +22,16 @@ public:
 	UPROPERTY(EditAnywhere)
 	TMap<FGuid, FVector2D> NodePositions;
 
+	virtual void NativeConstruct() override;
+	
 	UFUNCTION(BlueprintCallable)
-    void AddNodeWidget();
+    bool AddNodeWidget();
 
 	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 	
 protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UCanvasPanel> GraphCanvas;
+
+	TObjectPtr<UGraphModel> GraphModel;
 };

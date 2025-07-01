@@ -23,7 +23,7 @@ struct FGraphNodeData
 	FName Name;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<FGuid> ConnectedNodes; //TODO Change ot ptr
+	TArray<FGuid> ConnectedNodes;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 Value = 0;
@@ -57,7 +57,7 @@ public:
 	 * This function accepts an rvalue reference, allowing us to MoveTemp() from the call site.
 	 */
 	FGuid AddNode(FGraphNodeData&& NodeData);
-    FGuid AddNode(const TArray<FGuid>& ConnectedTo, bool bTraversable, const FGuid& NodeID = FGuid());
+	FGuid AddNode(const TArray<FGuid>& ConnectedTo = TArray<FGuid>(), bool bTraversable = false, const FGuid& NodeID = FGuid());
 
 	/**
 	 * Removes a node from the graph by its ID also removes all references to this node from other nodes'

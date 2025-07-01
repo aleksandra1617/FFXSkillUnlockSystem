@@ -3,22 +3,44 @@
 #include "Blueprint/DragDropOperation.h"
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
+#include "FFXSkillTree/GraphEditor/GraphModel.h"
 
-void UGraphWidget::AddNodeWidget()
+void UGraphWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+
+	GraphModel = NewObject<UGraphModel>();
+}
+
+bool UGraphWidget::AddNodeWidget()
 {
 	if (!GraphCanvas)
-		return;
+		return false;
 	
 	auto NodeWidget = CreateWidget<UGraphNodeWidget>(this, DefaultNodeWidgetClass);
 	
 	if (!NodeWidget)
-		return;
+		return false;
 
 	if (UCanvasPanelSlot* GraphPanelSlot = GraphCanvas->AddChildToCanvas(NodeWidget))
 	{
 		GraphPanelSlot->SetAutoSize(true);
 		GraphPanelSlot->SetPosition(FVector2d(0,0));
+
+		// Adds a node with default values
+		if (!GraphModel)
+		{
+			UE_LOG(LogTemp, Error, TEXT("GraphModel is null!"));
+		}
+		
+		FGuid NodeID = GraphModel->AddNode();
+		NodeWidget->NodeID = NodeID;
+		NodePositions.Add(NodeID, FVector2d(0,0));
+
+		return true;
 	}
+
+	return false;
 }
 
 bool UGraphWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
@@ -26,18 +48,18 @@ bool UGraphWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEven
 	if (!InOperation)
 		return false;
 
-	if (UUserWidget* DraggedWidget = Cast<UUserWidget>(InOperation->DefaultDragVisual))
+	if (UGraphNodeWidget* DraggedWidget = Cast<UGraphNodeWidget>(InOperation->DefaultDragVisual))
 	{
 		FVector2D LocalPosition = InGeometry.AbsoluteToLocal(InDragDropEvent.GetScreenSpacePosition());
 		DraggedWidget->RemoveFromParent();
 		
 		// Add the widget back to the canvas
 		UCanvasPanelSlot* GraphPanelSlot = GraphCanvas->AddChildToCanvas(DraggedWidget);
-		//UCanvasPanelSlot* GraphPanelSlot =  Cast<UCanvasPanelSlot>(DraggedWidget->Slot);
 		
 		if (GraphPanelSlot)
 		{
 			GraphPanelSlot->SetPosition(LocalPosition);
+			NodePositions[DraggedWidget->NodeID] = LocalPosition;
 		}
 
 		return true;
