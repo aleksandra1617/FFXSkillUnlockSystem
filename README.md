@@ -8,6 +8,9 @@ by moving along a network of nodes to learn abilities and increase stats. The gr
 allowing players to observe their growth firsthand. There are different versions of the Sphere Grid, including Regular, Standard, and Expert,
 each offering varying levels of customization.
 
+## Requirements
+Unreal Engine Version 5.6
+
 ## UI Elements: 
 1. Node Graph: A large, scrollable/tile-based node graph showing:
    - Slots for stat or ability upgrades.
