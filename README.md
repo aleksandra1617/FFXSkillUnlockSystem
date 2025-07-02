@@ -9,7 +9,7 @@ allowing players to observe their growth firsthand. There are different versions
 each offering varying levels of customization.
 
 ## Requirements
-Unreal Engine Version 5.6
+Unreal Engine Version 5.6, ideally Visual Studio 22 or 19
 
 ## UI Elements: 
 1. Node Graph: A large, scrollable/tile-based node graph showing:
