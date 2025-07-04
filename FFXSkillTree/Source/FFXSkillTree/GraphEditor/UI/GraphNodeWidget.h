@@ -6,7 +6,8 @@
 #include "Blueprint/UserWidget.h"
 #include "GraphNodeWidget.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNodeClicked, FGuid, NodeID);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNodeClicked, const FGuid&, NodeID);
 
 /**
  * 
@@ -22,25 +23,31 @@ public:
 	
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnNodeClicked OnNodeClicked;
-	
+
 	virtual void NativeConstruct() override;
+
+	UFUNCTION(BlueprintCallable, Category = "Graph")
+	void SetSelected(bool bSelected);
+
+	UFUNCTION(BlueprintCallable, Category = "Graph")
+	bool IsSelected() const { return bIsSelected; }
 
 protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UTextBlock> TitleTextBlock;
-	
-	//UPROPERTY(meta = (BindWidget))
-	//TObjectPtr<class UButton> NodeButton;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UBorder> NodeBorder;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UButton> NodeButton;
 
 	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual void NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation) override;
-	
+
 	UFUNCTION()
 	void HandleClick();
 
-	virtual bool NativeOnDragOver(const FGeometry& MyGeometry, const FDragDropEvent& DragDropEvent, UDragDropOperation* Operation) override
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Drag Over"));
-		return true;  
-	}
+private: 
+	bool bIsSelected = false;
 };

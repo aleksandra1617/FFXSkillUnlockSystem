@@ -2,22 +2,34 @@
 
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Components/Button.h"
-#include "Components/CanvasPanelSlot.h"
+#include "Components/Overlay.h"
+#include "Components/Border.h"
 
 class UCanvasPanelSlot;
 
 void UGraphNodeWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	
-	//if (NodeButton)
-	//{
-		//NodeButton->OnClicked.AddDynamic(this, &UGraphNodeWidget::HandleClick);
-	//}
 
 	SetVisibility(ESlateVisibility::Visible);
 	SetIsEnabled(true);
 	bIsVariable = true;
+	SetSelected(false);
+
+	if (NodeButton)
+	{
+		NodeButton->OnClicked.AddDynamic(this, &UGraphNodeWidget::HandleClick);
+	}
+}
+
+void UGraphNodeWidget::SetSelected(bool bSelected)
+{
+	bIsSelected = bSelected;
+
+	if (NodeBorder)
+	{
+		NodeBorder->SetBrushColor(bIsSelected ? FLinearColor::Blue : FLinearColor::White);
+	}
 }
 
 FReply UGraphNodeWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
@@ -35,16 +47,13 @@ void UGraphNodeWidget::NativeOnDragDetected(const FGeometry& InGeometry, const F
 	UDragDropOperation* DragOp = NewObject<UDragDropOperation>();
 	DragOp->DefaultDragVisual = this;
 	DragOp->Pivot = EDragPivot::MouseDown;
+	DragOp->Payload = this;
 	OutOperation = DragOp;
-
-	// Hide this while dragging
-	SetVisibility(ESlateVisibility::HitTestInvisible);
-
-	this->RemoveFromParent();
 }
 
 void UGraphNodeWidget::HandleClick()
 {
-	UE_LOG(LogTemp, Log, TEXT("Node clicked: %s"), *NodeID.ToString());
 	OnNodeClicked.Broadcast(NodeID);
+
+	SetSelected(!bIsSelected);
 }

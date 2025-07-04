@@ -28,10 +28,7 @@ bool UGraphWidget::AddNodeWidget()
 		GraphPanelSlot->SetPosition(FVector2d(0,0));
 
 		// Adds a node with default values
-		if (!GraphModel)
-		{
-			UE_LOG(LogTemp, Error, TEXT("GraphModel is null!"));
-		}
+		ensureMsgf(GraphModel, TEXT("Attempt to access GraphModel in GraphWidget failed because the GraphModel is null!"));
 		
 		FGuid NodeID = GraphModel->AddNode();
 		NodeWidget->NodeID = NodeID;
@@ -48,21 +45,20 @@ bool UGraphWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEven
 	if (!InOperation)
 		return false;
 
-	if (UGraphNodeWidget* DraggedWidget = Cast<UGraphNodeWidget>(InOperation->DefaultDragVisual))
+	if (UGraphNodeWidget* DraggedWidget = Cast<UGraphNodeWidget>(InOperation->Payload))
 	{
 		FVector2D LocalPosition = InGeometry.AbsoluteToLocal(InDragDropEvent.GetScreenSpacePosition());
-		DraggedWidget->RemoveFromParent();
-		
-		// Add the widget back to the canvas
-		UCanvasPanelSlot* GraphPanelSlot = GraphCanvas->AddChildToCanvas(DraggedWidget);
-		
-		if (GraphPanelSlot)
+		UCanvasPanelSlot* CanSlot = Cast<UCanvasPanelSlot>(DraggedWidget->Slot);
+
+		if (CanSlot)
 		{
-			GraphPanelSlot->SetPosition(LocalPosition);
+			CanSlot->SetPosition(LocalPosition);
 			NodePositions[DraggedWidget->NodeID] = LocalPosition;
 		}
-
+		
 		return true;
 	}
+	
 	return false;
 }
+

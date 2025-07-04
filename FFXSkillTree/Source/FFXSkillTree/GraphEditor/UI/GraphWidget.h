@@ -33,5 +33,7 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UCanvasPanel> GraphCanvas;
 
+	// Data Only
+	FGuid SelectedNodeID;
 	TObjectPtr<UGraphModel> GraphModel;
 };
