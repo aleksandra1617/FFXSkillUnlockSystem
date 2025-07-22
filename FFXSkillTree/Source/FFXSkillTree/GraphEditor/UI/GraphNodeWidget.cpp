@@ -36,7 +36,8 @@ FReply UGraphNodeWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, co
 {
 	if (InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton))
 	{
-		return UWidgetBlueprintLibrary::DetectDragIfPressed(InMouseEvent, this, EKeys::LeftMouseButton).NativeReply;
+		FEventReply EventReply = UWidgetBlueprintLibrary::DetectDragIfPressed(InMouseEvent, this, EKeys::LeftMouseButton);
+		return EventReply.NativeReply;
 	}
 	
 	return FReply::Unhandled();
@@ -44,11 +45,36 @@ FReply UGraphNodeWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, co
 
 void UGraphNodeWidget::NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)
 {
+	// Hide the original node while dragging
+	SetVisibility(ESlateVisibility::Hidden);
+	
 	UDragDropOperation* DragOp = NewObject<UDragDropOperation>();
-	DragOp->DefaultDragVisual = this;
-	DragOp->Pivot = EDragPivot::MouseDown;
+
+	// Create a visual clone of this widget
+	if (UWorld* World = GetWorld())
+	{
+		if (UGraphNodeWidget* DragVisual = CreateWidget<UGraphNodeWidget>(World, GetClass()))
+		{
+			DragVisual->NodeID = NodeID;
+			DragVisual->SetRenderOpacity(0.9f);
+			DragOp->DefaultDragVisual = DragVisual;
+			DragOp->Pivot = EDragPivot::MouseDown;
+		}
+	}
+	
 	DragOp->Payload = this;
 	OutOperation = DragOp;
+}
+
+void UGraphNodeWidget::NativeOnDragCancelled(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
+{
+	SetVisibility(ESlateVisibility::Visible);
+}
+
+bool UGraphNodeWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
+{
+	SetVisibility(ESlateVisibility::Visible);
+	return true;
 }
 
 void UGraphNodeWidget::HandleClick()
