@@ -47,9 +47,17 @@ bool UGraphWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEven
 
 	if (UGraphNodeWidget* OriginalWidget = Cast<UGraphNodeWidget>(InOperation->Payload))
 	{
+		auto DragVisual = InOperation->DefaultDragVisual;
+		
+		FVector2D ScreenPosition;
+		if (DragVisual)
+		{
+			ScreenPosition = DragVisual->GetCachedGeometry().GetAbsolutePosition();
+		}
+		
 		OriginalWidget->SetVisibility(ESlateVisibility::Visible);
 		
-		FVector2D LocalPosition = InGeometry.AbsoluteToLocal(InDragDropEvent.GetScreenSpacePosition());
+		FVector2D LocalPosition = InGeometry.AbsoluteToLocal(ScreenPosition);
 		UCanvasPanelSlot* CanSlot = Cast<UCanvasPanelSlot>(OriginalWidget->Slot);
 
 		if (CanSlot)
