@@ -25,7 +25,7 @@ public:
 	virtual void NativeConstruct() override;
 	
 	UFUNCTION(BlueprintCallable)
-    bool AddNodeWidget();
+	bool AddNodeWidget(FVector2D Location = FVector2D::ZeroVector);
 
 	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 	

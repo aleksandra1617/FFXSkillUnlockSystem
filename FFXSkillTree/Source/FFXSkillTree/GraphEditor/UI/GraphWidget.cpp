@@ -12,7 +12,7 @@ void UGraphWidget::NativeConstruct()
 	GraphModel = NewObject<UGraphModel>();
 }
 
-bool UGraphWidget::AddNodeWidget()
+bool UGraphWidget::AddNodeWidget(FVector2D Location)
 {
 	if (!GraphCanvas)
 		return false;
@@ -25,14 +25,14 @@ bool UGraphWidget::AddNodeWidget()
 	if (UCanvasPanelSlot* GraphPanelSlot = GraphCanvas->AddChildToCanvas(NodeWidget))
 	{
 		GraphPanelSlot->SetAutoSize(true);
-		GraphPanelSlot->SetPosition(FVector2d(0,0));
+		GraphPanelSlot->SetPosition(Location);
 
 		// Adds a node with default values
 		ensureMsgf(GraphModel, TEXT("Attempt to access GraphModel in GraphWidget failed because the GraphModel is null!"));
 		
 		FGuid NodeID = GraphModel->AddNode();
 		NodeWidget->NodeID = NodeID;
-		NodePositions.Add(NodeID, FVector2d(0,0));
+		NodePositions.Add(NodeID, Location);
 
 		return true;
 	}
